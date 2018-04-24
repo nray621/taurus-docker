@@ -1,11 +1,7 @@
-# import http.server
-# import socketserver
-# import subprocess
-# import json
-# import urllib.parse
-
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
+import json
+import subprocess
 
 class S(BaseHTTPRequestHandler):
     def _set_response(self):
@@ -16,6 +12,9 @@ class S(BaseHTTPRequestHandler):
     def do_GET(self):
         logging.info("GET request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
         self._set_response()
+        if self.path == "/run_test":
+            self.wfile.write("In {}".format(self.path).encode('utf-8'))
+            subprocess.run("bzt test.yml", shell=True)
         self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
 
     def do_POST(self):
