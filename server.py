@@ -16,11 +16,14 @@ class S(BaseHTTPRequestHandler):
         if self.path.startswith("/run_test"):
             concurrency_param = self.path.split('?concurrency=')
             if len(concurrency_param) > 1:
-                self.wfile.write("~~~~~~~query params exist~~~~~ {}".format(concurrency_param[1]).encode('utf-8'))
+                self.wfile.write("running test with concurrency of {}".format(concurrency_param[1]).encode('utf-8'))
                 subprocess.run("bzt test.yml -o execution.0.concurrency={}".format(concurrency_param[1]), shell=True)
             else:
+                self.wfile.write(("running test").encode('utf-8'))
                 subprocess.run("bzt test.yml", shell=True)
         self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
+        # self.wfile.write('')
+        # self.copyfile(open('./stats.xml'), self.wfile)
 
 def run(server_class=HTTPServer, handler_class=S, port=8000):
     logging.basicConfig(level=logging.INFO)
