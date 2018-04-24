@@ -2,6 +2,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import json
 import subprocess
+import yaml
 
 class S(BaseHTTPRequestHandler):
     def _set_response(self):
@@ -12,19 +13,14 @@ class S(BaseHTTPRequestHandler):
     def do_GET(self):
         logging.info("GET request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
         self._set_response()
-        if self.path == "/run_test":
-            self.wfile.write("In {}".format(self.path).encode('utf-8'))
-            subprocess.run("bzt test.yml", shell=True)
+        if self.path.startswith("/run_test"):
+            concurrency_param = self.path.split('?concurrency=')
+            if len(concurrency_param) > 1:
+                self.wfile.write("~~~~~~~query params exist~~~~~ {}".format(concurrency_param[1]).encode('utf-8'))
+                subprocess.run("bzt test.yml -o execution.0.concurrency={}".format(concurrency_param[1]), shell=True)
+            else:
+                subprocess.run("bzt test.yml", shell=True)
         self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
-
-    def do_POST(self):
-        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
-        post_data = self.rfile.read(content_length) # <--- Gets the data itself
-        logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
-                str(self.path), str(self.headers), post_data.decode('utf-8'))
-
-        self._set_response()
-        self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
 def run(server_class=HTTPServer, handler_class=S, port=8000):
     logging.basicConfig(level=logging.INFO)
