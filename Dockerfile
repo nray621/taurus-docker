@@ -2,7 +2,7 @@ FROM python:3
 
 WORKDIR /app
 
-ADD . /app
+# ADD . /app
 
 RUN pip install bzt
 
