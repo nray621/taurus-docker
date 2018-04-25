@@ -19,3 +19,4 @@ reporting:
   failed-labels: false
   test-duration: true
   dump-xml: results.xml
+  dump-csv: results.csv
