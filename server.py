@@ -14,27 +14,36 @@ class S(BaseHTTPRequestHandler):
     def do_GET(self):
         logging.info("GET request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
         if self.path.startswith("/run_test"):
-            self._set_response('application/json')
-            timestamp = {'xml_route': 'log/' + str(time.time()) + '.xml', 'csv_route': 'log/' + str(time.time()) + '.csv'}
-            json_timestamp = json.dumps(timestamp)
-            self.wfile.write(json_timestamp.encode('utf-8'))
-            subprocess.run("bzt test.yml", shell=True)
-            subprocess.run("touch {}".format(timestamp['xml_route']), shell=True)
-            subprocess.run("touch {}".format(timestamp['csv_route']), shell=True)
-            subprocess.run("mv results.xml {}".format(timestamp['xml_route']), shell=True)
-            subprocess.run("mv results.csv {}".format(timestamp['csv_route']), shell=True)
+            self.run_test()
         else:
-            try:
-                f = open(curdir + sep + self.path, 'rb')
-                if self.path.endswith('csv'):
-                    self._set_response('application/csv')
-                else:
-                    self._set_response('application/xml')
-                self.wfile.write(f.read())
-                f.close()
-            except IOError:
-                self.send_error(404,'File Not Found: %s' % self.path)
+            self.return_log()
         return
+
+    def return_log(self):
+        try:
+            f = open(curdir + sep + self.path, 'rb')
+            if self.path.endswith('csv'):
+                self._set_response('application/csv')
+            else:
+                self._set_response('application/xml')
+            self.wfile.write(f.read())
+            f.close()
+        except IOError:
+            self.send_error(404,'File Not Found: %s' % self.path)
+
+    def run_test(self):
+        self._set_response('application/json')
+        timestamp = {'xml_route': 'log/' + str(time.time()) + '.xml', 'csv_route': 'log/' + str(time.time()) + '.csv'}
+        json_timestamp = json.dumps(timestamp)
+        self.wfile.write(json_timestamp.encode('utf-8'))
+        subprocess.run("bzt test.yml", shell=True)
+        self.create_timestamped_logs(timestamp)
+
+    def create_timestamped_logs(self, timestamp):
+        subprocess.run("touch {}".format(timestamp['xml_route']), shell=True)
+        subprocess.run("touch {}".format(timestamp['csv_route']), shell=True)
+        subprocess.run("mv results.xml {}".format(timestamp['xml_route']), shell=True)
+        subprocess.run("mv results.csv {}".format(timestamp['csv_route']), shell=True)
 
 def run(server_class=HTTPServer, handler_class=S, port=8000):
     logging.basicConfig(level=logging.INFO)
