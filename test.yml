@@ -18,4 +18,4 @@ reporting:
   percentiles: true
   failed-labels: false
   test-duration: true
-  dump-xml: stats.xml
+  dump-xml: results.xml

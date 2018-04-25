@@ -15,7 +15,7 @@ RUN ./configure --with-ssl && make && make install
 
 WORKDIR /app
 
-# Make port 80 available to the world outside this container
+# Make port 8000 available to the world outside this container
 EXPOSE 8000
 
 # Run app.py when the container launches
